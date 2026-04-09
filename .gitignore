@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# Model artifacts (auto-trained at boot)
+*.pkl
+
+# Frontend dev leftovers
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

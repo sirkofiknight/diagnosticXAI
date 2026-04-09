@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistic Regression Diagnostic Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Raleway', sans-serif; background-color: #09090b; color: #f4f4f5; }
+        .panel { border: 1px solid #27272a; background-color: #18181b; }
+        input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #e4e4e7; cursor: pointer; margin-top: -5px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #3f3f46; border-radius: 2px; }
+        input[type=range]:focus { outline: none; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col p-6 max-w-[1800px] mx-auto overflow-hidden text-zinc-100">
+
+    <!-- HEADER -->
+    <header class="mb-4 border-b border-zinc-800 pb-4 shrink-0 flex items-end justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-wide text-white">Logistic Regression Diagnostic Interface</h1>
+            <p class="text-zinc-500 mt-1 text-sm font-medium tracking-wide">Explainable Binomial Classification Analysis</p>
+        </div>
+        <div class="flex items-center gap-3 text-xs font-medium uppercase tracking-widest">
+            <button id="deep-analytics-btn" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 px-3 py-1.5 rounded transition-colors cursor-pointer mr-2">Deep Visual Analytics</button>
+            <span class="text-zinc-600">Personas:</span>
+            <button id="preset-struggling" class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">Struggling</button>
+            <button id="preset-achiever"   class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">High Achiever</button>
+            <button id="preset-burnout"    class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">Burnout Risk</button>
+        </div>
+    </header>
+
+    <main class="flex-1 grid grid-cols-12 gap-6 min-h-0">
+
+        <!-- LEFT: Input Panel -->
+        <section class="col-span-3 panel py-6 px-8 flex flex-col gap-10 overflow-hidden">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                <h2 class="text-sm tracking-widest uppercase font-semibold text-zinc-400">Input Variables</h2>
+                <button id="randomize-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors cursor-pointer">Randomize</button>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-end">
+                    <label for="studytime" class="text-sm font-medium text-zinc-300">Study Time (Level)</label>
+                    <span id="studytime-val" class="font-mono text-sm text-zinc-500">2</span>
+                </div>
+                <input type="range" id="studytime" min="1" max="4" step="1" value="2">
+                <div class="flex justify-between text-[9px] text-zinc-600 font-bold uppercase tracking-tighter">
+                    <span>Low</span><span>Mid</span><span>High</span><span>Max</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-end">
+                    <label for="wellbeing" class="text-sm font-medium text-zinc-300">Well-being (Health/Sleep)</label>
+                    <span id="wellbeing-val" class="font-mono text-sm text-zinc-500">3</span>
+                </div>
+                <input type="range" id="wellbeing" min="1" max="5" step="1" value="3">
+                <div class="flex justify-between text-[9px] text-zinc-600 font-bold uppercase tracking-tighter">
+                    <span>Poor</span><span>Fair</span><span>Optimal</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between items-end">
+                    <label for="absences" class="text-sm font-medium text-zinc-300">Attendance (%)</label>
+                    <span id="absences-val" class="font-mono text-sm text-zinc-500">100</span>
+                </div>
+                <input type="range" id="absences" min="0" max="100" step="1" value="100">
+            </div>
+
+            <div class="mt-auto border-t border-zinc-800 pt-6 text-[11px] text-zinc-500 leading-relaxed font-medium">
+                Research Pillar: Actionable Student Success Diagnostics. Model trained on UCI 'Student Performance' dataset (ID: 320) using modifiable wellness & engagement metrics.
+            </div>
+        </section>
+
+        <section class="col-span-9 flex flex-col gap-6 min-h-0">
+            <div class="flex gap-6 flex-1 min-h-0">
+
+                <div class="panel p-6 flex flex-col w-1/3 min-h-0">
+                    <h2 class="text-sm tracking-widest uppercase font-semibold border-b border-zinc-800 pb-3 mb-5 text-zinc-400">Algorithmic Output</h2>
+                    <div class="flex flex-col gap-5 flex-1">
+                        <div>
+                            <div class="text-zinc-500 text-xs uppercase mb-1 tracking-widest">Inferred Class</div>
+                            <div id="prediction-text" class="text-5xl font-semibold tracking-tight text-zinc-300">--</div>
+                        </div>
+                        <div>
+                            <div class="text-zinc-500 text-xs uppercase mb-2 tracking-widest">Confidence</div>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <div id="confidence-text" class="text-2xl font-medium text-zinc-300">--%</div>
+                                <div id="confidence-warning" class="hidden text-[10px] uppercase bg-amber-900/30 text-amber-500 border border-amber-800 px-2 py-0.5 rounded font-bold tracking-wider">Borderline</div>
+                                <div id="anomaly-warning"    class="hidden text-[10px] uppercase bg-red-900/30 text-red-500 border border-red-800 px-2 py-0.5 rounded font-bold tracking-wider">OOD Anomaly</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-5 border-t border-zinc-800">
+                        <div class="text-zinc-500 text-[10px] uppercase mb-2 tracking-widest flex justify-between">
+                            <span>Probability Gradient</span>
+                            <span id="prob-literal" class="font-mono text-zinc-400">50%</span>
+                        </div>
+                        <div class="w-full bg-red-900/40 rounded-full h-3 flex overflow-hidden relative border border-zinc-800">
+                            <div id="prob-fill" class="bg-green-500 h-full transition-all duration-300" style="width:50%"></div>
+                            <div class="absolute inset-0 flex justify-center items-center">
+                                <div class="w-0.5 h-full bg-zinc-950 z-10"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-1 text-[9px] font-mono text-zinc-600">
+                            <span>0.0</span><span>0.5</span><span>1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel p-6 flex flex-col w-2/3 min-h-0">
+                    <h2 class="text-sm tracking-widest uppercase font-semibold border-b border-zinc-800 pb-3 mb-4 text-zinc-400 flex justify-between items-center">
+                        <span>Coefficient Contributions</span>
+                        <button id="explain-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 text-xs rounded transition-colors tracking-wide font-medium cursor-pointer">Explain Local Decision</button>
+                    </h2>
+                    <div class="flex-1 relative min-h-[120px] mb-4">
+                        <canvas id="contribChart"></canvas>
+                    </div>
+                    <div class="bg-zinc-950 p-4 border border-zinc-800 rounded flex flex-col gap-3 shrink-0">
+                        <div id="reasoning-text" class="text-xs text-zinc-400 leading-relaxed font-medium">--</div>
+                        <div class="border-t border-zinc-800 border-dashed pt-3 flex flex-col gap-1.5">
+                            <div id="action-plan-text"    class="text-[11px] text-green-400 leading-relaxed font-semibold tracking-wide"></div>
+                            <div id="counterfactual-text" class="text-[11px] text-blue-400 leading-relaxed italic tracking-wide"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="mt-3 text-center text-[10px] text-zinc-600 tracking-wide font-medium">
+        Data Provenance: UCI Machine Learning Repository (Student Performance Dataset). Holistic 3-Pillar Expert Model.
+    </footer>
+
+    <!-- MODALS -->
+    <!-- ... same as before, no changes needed to modal structure ... -->
+    <div id="analytics-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="panel max-w-[1200px] w-full min-h-[72vh] p-8 rounded flex flex-col gap-6 transform scale-95 transition-transform duration-300" id="analytics-content">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
+                <h2 class="text-xl font-semibold text-zinc-200 tracking-wide">Deep Visual Analytics</h2>
+                <button id="close-analytics" class="text-zinc-500 hover:text-zinc-300 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="flex-1 grid grid-cols-2 gap-8 min-h-0">
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-[11px] font-semibold tracking-widest uppercase text-zinc-500 text-center">Probability Sensitivity Simulation</h3>
+                    <div class="flex-1 relative min-h-[200px]"><canvas id="sensitivityChart"></canvas></div>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-[11px] font-semibold tracking-widest uppercase text-zinc-500 text-center">Topology Signature (Radar)</h3>
+                    <div class="flex-1 relative min-h-[200px]"><canvas id="radarChart"></canvas></div>
+                </div>
+                <div class="col-span-2 border-t border-zinc-800 pt-6">
+                    <h3 class="text-[10px] font-semibold tracking-widest uppercase text-zinc-500 text-center mb-4">SHAP Additive Force Plot (Approximation)</h3>
+                    <div class="w-full bg-zinc-950 border border-zinc-800 rounded h-10 flex overflow-hidden" id="shap-container"></div>
+                    <div class="flex justify-between mt-2 text-[10px] text-zinc-500 font-mono tracking-widest">
+                        <span>← TOWARDS FAIL</span><span>LOG-ODDS NEUTRAL (0.00)</span><span>TOWARDS PASS →</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="explanation-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="panel max-w-2xl w-full p-8 rounded flex flex-col gap-6 transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
+                <div class="flex items-center gap-6">
+                    <h2 class="text-lg font-semibold text-zinc-200 tracking-wide">Model Explanation</h2>
+                    <div class="flex bg-zinc-950 border border-zinc-800 rounded p-1">
+                        <button id="toggle-simple"    class="px-3 py-1 text-xs font-semibold rounded bg-zinc-800 text-white cursor-pointer">Human Translation</button>
+                        <button id="toggle-technical" class="px-3 py-1 text-xs font-semibold rounded text-zinc-500 hover:text-zinc-300 cursor-pointer">Technical Logits</button>
+                    </div>
+                </div>
+                <button id="close-modal" class="text-zinc-500 hover:text-zinc-300 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="simple-explanation-text"   class="text-zinc-300 text-sm leading-relaxed block"></div>
+            <div id="detailed-explanation-text" class="text-zinc-400 font-mono text-xs leading-relaxed hidden bg-zinc-950 p-4 border border-zinc-800 rounded"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
