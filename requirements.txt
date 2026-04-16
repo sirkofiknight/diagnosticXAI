@@ -5,3 +5,7 @@ numpy
 pandas
 ucimlrepo
 gunicorn
+shap
+lime
+xgboost
+matplotlib

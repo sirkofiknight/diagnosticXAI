@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistic Regression Diagnostic Interface</title>
+    <title>XAI Student Performance Diagnostic Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,10 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #e4e4e7; cursor: pointer; margin-top: -5px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #3f3f46; border-radius: 2px; }
         input[type=range]:focus { outline: none; }
+        select { color-scheme: dark; }
+        .modal-scroll { overflow-y: auto; max-height: 85vh; }
+        .tbl-cell { padding: 6px 10px; font-size: 11px; }
+        .compare-hdr { background-color: #0f0f12; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col p-6 max-w-[1800px] mx-auto overflow-hidden text-zinc-100">
@@ -23,12 +27,13 @@
     <!-- HEADER -->
     <header class="mb-4 border-b border-zinc-800 pb-4 shrink-0 flex items-end justify-between">
         <div>
-            <h1 class="text-2xl font-semibold tracking-wide text-white">Logistic Regression Diagnostic Interface</h1>
-            <p class="text-zinc-500 mt-1 text-sm font-medium tracking-wide">Explainable Binomial Classification Analysis</p>
+            <h1 class="text-2xl font-semibold tracking-wide text-white">XAI Student Performance Diagnostic</h1>
+            <p class="text-zinc-500 mt-1 text-sm font-medium tracking-wide">Multi-Model Explainable AI — SHAP · LIME · Logit Decomposition</p>
         </div>
-        <div class="flex items-center gap-3 text-xs font-medium uppercase tracking-widest">
-            <button id="deep-analytics-btn" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 px-3 py-1.5 rounded transition-colors cursor-pointer mr-2">Deep Visual Analytics</button>
-            <span class="text-zinc-600">Personas:</span>
+        <div class="flex items-center gap-3 text-xs font-medium uppercase tracking-widest flex-wrap justify-end">
+            <button id="model-compare-btn" class="bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border border-purple-500/30 px-3 py-1.5 rounded transition-colors cursor-pointer">Model Comparison</button>
+            <button id="deep-analytics-btn" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 px-3 py-1.5 rounded transition-colors cursor-pointer">Deep Analytics</button>
+            <span class="text-zinc-600 ml-1">Personas:</span>
             <button id="preset-struggling" class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">Struggling</button>
             <button id="preset-achiever"   class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">High Achiever</button>
             <button id="preset-burnout"    class="text-zinc-400 hover:text-zinc-100 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded transition-colors cursor-pointer">Burnout Risk</button>
@@ -38,10 +43,24 @@
     <main class="flex-1 grid grid-cols-12 gap-6 min-h-0">
 
         <!-- LEFT: Input Panel -->
-        <section class="col-span-3 panel py-6 px-8 flex flex-col gap-10 overflow-hidden">
+        <section class="col-span-3 panel py-6 px-8 flex flex-col gap-8 overflow-hidden">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
                 <h2 class="text-sm tracking-widest uppercase font-semibold text-zinc-400">Input Variables</h2>
                 <button id="randomize-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] uppercase tracking-wider px-2 py-1 rounded transition-colors cursor-pointer">Randomize</button>
+            </div>
+
+            <!-- Model Selector -->
+            <div class="flex flex-col gap-2">
+                <label class="text-xs font-semibold uppercase tracking-widest text-zinc-500">Active Model</label>
+                <select id="model-select" class="bg-zinc-900 border border-zinc-700 text-zinc-200 text-xs rounded px-3 py-2 focus:outline-none focus:border-zinc-500 cursor-pointer w-full">
+                    <option value="Logistic Regression">Logistic Regression</option>
+                    <option value="Decision Tree">Decision Tree</option>
+                    <option value="Random Forest">Random Forest</option>
+                    <option value="XGBoost">XGBoost</option>
+                    <option value="SVM">SVM (RBF)</option>
+                    <option value="KNN">KNN (k=5)</option>
+                </select>
+                <div id="model-status" class="text-[10px] text-zinc-600 leading-snug">Select a model — SVM/KNN may be slower</div>
             </div>
 
             <div class="flex flex-col gap-3">
@@ -74,8 +93,8 @@
                 <input type="range" id="absences" min="0" max="100" step="1" value="100">
             </div>
 
-            <div class="mt-auto border-t border-zinc-800 pt-6 text-[11px] text-zinc-500 leading-relaxed font-medium">
-                Research Pillar: Actionable Student Success Diagnostics. Model trained on UCI 'Student Performance' dataset (ID: 320) using modifiable wellness & engagement metrics.
+            <div class="mt-auto border-t border-zinc-800 pt-5 text-[11px] text-zinc-500 leading-relaxed font-medium">
+                Research Pillar: Actionable Student Success Diagnostics. UCI Student Performance Dataset (ID: 320). SHAP + LIME multi-model XAI.
             </div>
         </section>
 
@@ -83,11 +102,17 @@
             <div class="flex gap-6 flex-1 min-h-0">
 
                 <div class="panel p-6 flex flex-col w-1/3 min-h-0">
-                    <h2 class="text-sm tracking-widest uppercase font-semibold border-b border-zinc-800 pb-3 mb-5 text-zinc-400">Algorithmic Output</h2>
+                    <h2 class="text-sm tracking-widest uppercase font-semibold border-b border-zinc-800 pb-3 mb-5 text-zinc-400">
+                        Algorithmic Output
+                    </h2>
                     <div class="flex flex-col gap-5 flex-1">
                         <div>
                             <div class="text-zinc-500 text-xs uppercase mb-1 tracking-widest">Inferred Class</div>
                             <div id="prediction-text" class="text-5xl font-semibold tracking-tight text-zinc-300">--</div>
+                        </div>
+                        <div>
+                            <div class="text-zinc-500 text-xs uppercase mb-1 tracking-widest">Active Model</div>
+                            <div id="active-model-badge" class="text-xs font-semibold text-purple-400 bg-purple-900/20 border border-purple-800/40 px-2 py-1 rounded inline-block">Logistic Regression</div>
                         </div>
                         <div>
                             <div class="text-zinc-500 text-xs uppercase mb-2 tracking-widest">Confidence</div>
@@ -118,8 +143,11 @@
 
                 <div class="panel p-6 flex flex-col w-2/3 min-h-0">
                     <h2 class="text-sm tracking-widest uppercase font-semibold border-b border-zinc-800 pb-3 mb-4 text-zinc-400 flex justify-between items-center">
-                        <span>Coefficient Contributions</span>
-                        <button id="explain-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 text-xs rounded transition-colors tracking-wide font-medium cursor-pointer">Explain Local Decision</button>
+                        <span id="contrib-chart-label">Coefficient Contributions</span>
+                        <div class="flex gap-2">
+                            <button id="xai-compare-btn" class="bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 border border-yellow-600/30 px-2 py-1 text-[10px] rounded transition-colors tracking-wide font-medium cursor-pointer uppercase">SHAP vs LIME</button>
+                            <button id="explain-btn" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 text-xs rounded transition-colors tracking-wide font-medium cursor-pointer">Explain Decision</button>
+                        </div>
                     </h2>
                     <div class="flex-1 relative min-h-[120px] mb-4">
                         <canvas id="contribChart"></canvas>
@@ -138,11 +166,12 @@
     </main>
 
     <footer class="mt-3 text-center text-[10px] text-zinc-600 tracking-wide font-medium">
-        Data Provenance: UCI Machine Learning Repository (Student Performance Dataset). Holistic 3-Pillar Expert Model.
+        Data Provenance: UCI Machine Learning Repository (Student Performance Dataset). Multi-Model XAI Research Suite — SHAP · LIME · Logit Decomposition.
     </footer>
 
-    <!-- MODALS -->
-    <!-- ... same as before, no changes needed to modal structure ... -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: Deep Visual Analytics (existing)                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div id="analytics-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
         <div class="panel max-w-[1200px] w-full min-h-[72vh] p-8 rounded flex flex-col gap-6 transform scale-95 transition-transform duration-300" id="analytics-content">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
@@ -161,7 +190,7 @@
                     <div class="flex-1 relative min-h-[200px]"><canvas id="radarChart"></canvas></div>
                 </div>
                 <div class="col-span-2 border-t border-zinc-800 pt-6">
-                    <h3 class="text-[10px] font-semibold tracking-widest uppercase text-zinc-500 text-center mb-4">SHAP Additive Force Plot (Approximation)</h3>
+                    <h3 class="text-[10px] font-semibold tracking-widest uppercase text-zinc-500 text-center mb-4">Additive Force Plot (SHAP / Logit Approximation)</h3>
                     <div class="w-full bg-zinc-950 border border-zinc-800 rounded h-10 flex overflow-hidden" id="shap-container"></div>
                     <div class="flex justify-between mt-2 text-[10px] text-zinc-500 font-mono tracking-widest">
                         <span>← TOWARDS FAIL</span><span>LOG-ODDS NEUTRAL (0.00)</span><span>TOWARDS PASS →</span>
@@ -171,6 +200,9 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: Model Explanation (existing)                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div id="explanation-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
         <div class="panel max-w-2xl w-full p-8 rounded flex flex-col gap-6 transform scale-95 transition-transform duration-300" id="modal-content">
             <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
@@ -187,6 +219,95 @@
             </div>
             <div id="simple-explanation-text"   class="text-zinc-300 text-sm leading-relaxed block"></div>
             <div id="detailed-explanation-text" class="text-zinc-400 font-mono text-xs leading-relaxed hidden bg-zinc-950 p-4 border border-zinc-800 rounded"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: Multi-Model XAI Research Suite (NEW)                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="comparison-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="panel w-full max-w-[1500px] rounded flex flex-col modal-scroll">
+            <div class="p-8 flex flex-col gap-8">
+
+                <!-- Header -->
+                <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
+                    <div>
+                        <h2 class="text-xl font-semibold text-zinc-200 tracking-wide">Multi-Model XAI Research Suite</h2>
+                        <p class="text-xs text-zinc-500 mt-1">UCI Student Performance Dataset — 6 classifiers × SHAP + LIME</p>
+                    </div>
+                    <button id="close-comparison" class="text-zinc-500 hover:text-zinc-300 cursor-pointer">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- Section 1: Metrics Table -->
+                <div>
+                    <h3 class="text-xs font-semibold tracking-widest uppercase text-zinc-400 mb-3">Model Performance Comparison</h3>
+                    <div id="metrics-table" class="overflow-x-auto">
+                        <div class="text-zinc-500 text-xs p-4">Loading metrics... (requires train_all.py to have been run)</div>
+                    </div>
+                </div>
+
+                <!-- Section 2: XAI Comparison — SHAP vs LIME for current input -->
+                <div class="border-t border-zinc-800 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-semibold tracking-widest uppercase text-zinc-400">XAI Analysis — Current Input · <span id="xai-model-label" class="text-purple-400 normal-case">Logistic Regression</span></h3>
+                        <button id="load-xai-btn" class="bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30 border border-yellow-500/30 px-3 py-1.5 text-[10px] uppercase tracking-wider rounded transition-colors cursor-pointer">Compute SHAP + LIME</button>
+                    </div>
+                    <div id="xai-loading" class="hidden text-zinc-500 text-xs mb-3">Computing XAI explanations (SVM/KNN may take ~10s)...</div>
+                    <div id="xai-error" class="text-red-400 text-xs mb-3"></div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
+                            <h4 class="text-[10px] uppercase tracking-widest text-blue-400 font-semibold">SHAP Feature Contributions</h4>
+                            <div class="relative min-h-[180px]"><canvas id="xai-shap-chart"></canvas></div>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <h4 class="text-[10px] uppercase tracking-widest text-yellow-400 font-semibold">LIME Feature Weights</h4>
+                            <div class="relative min-h-[180px]"><canvas id="xai-lime-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <!-- Side-by-side comparison chart -->
+                    <div class="mt-4 flex flex-col gap-2">
+                        <h4 class="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">SHAP vs LIME — Grouped Comparison</h4>
+                        <div class="relative min-h-[180px]"><canvas id="xai-comparison-chart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Cross-Model Comparison -->
+                <div class="border-t border-zinc-800 pt-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <h3 class="text-xs font-semibold tracking-widest uppercase text-zinc-400">Cross-Model XAI Comparison</h3>
+                        <button id="compare-all-btn" class="bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-500/30 px-3 py-1.5 text-[10px] uppercase tracking-wider rounded transition-colors cursor-pointer">Run All 6 Models</button>
+                        <span id="compare-loading" class="text-zinc-500 text-xs hidden">Running all models (SVM/KNN slow ~30s)...</span>
+                    </div>
+                    <div id="compare-results" class="overflow-x-auto">
+                        <div class="text-zinc-600 text-xs p-3">Click "Run All 6 Models" to compute SHAP + LIME for all classifiers on the current input.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: SHAP vs LIME quick comparison panel (NEW)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="xai-modal" class="fixed inset-0 bg-black/95 items-center justify-center p-6 z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="panel max-w-[900px] w-full p-8 rounded flex flex-col gap-6">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-4 shrink-0">
+                <div>
+                    <h2 class="text-lg font-semibold text-zinc-200 tracking-wide">SHAP vs LIME — Feature Attribution</h2>
+                    <p id="xai-modal-subtitle" class="text-xs text-zinc-500 mt-1">Current model: Logistic Regression</p>
+                </div>
+                <button id="close-xai-modal" class="text-zinc-500 hover:text-zinc-300 cursor-pointer">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="xai-modal-loading" class="text-zinc-500 text-sm text-center py-8">Computing SHAP and LIME explanations...</div>
+            <div id="xai-modal-content" class="hidden flex flex-col gap-4">
+                <div class="relative min-h-[220px]"><canvas id="xai-modal-chart"></canvas></div>
+                <div class="grid grid-cols-3 gap-4" id="xai-values-grid"></div>
+            </div>
         </div>
     </div>
 
